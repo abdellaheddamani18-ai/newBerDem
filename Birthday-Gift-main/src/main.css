@@ -1,0 +1,582 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+html, body {
+    width: 100%;
+    background: #000;
+    color: #fff;
+    font-family: 'Cormorant Garamond', serif;
+    overflow-x: hidden;
+}
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.5);
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #d4af37, #6b21a8);
+    border-radius: 10px;
+}
+#threeCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: block;
+}
+.loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1s ease;
+}
+.loader.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+.loader-content { 
+    text-align: center; 
+}
+.loader-circle {
+    width: 60px;
+    height: 60px;
+    border: 2px solid rgba(212, 175, 55, 0.2);
+    border-top: 2px solid #d4af37;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { 
+    to { transform: rotate(360deg); } 
+}
+.loader-text {
+    font-family: 'Cinzel Decorative', serif;
+    color: #d4af37;
+    letter-spacing: 3px;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+.loader-progress {
+    color: #888;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+}
+.poem-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 2s ease;
+}
+.poem-overlay.show { opacity: 1; }
+.poem-overlay.hide { opacity: 0; }
+.poem-container {
+    max-width: 1000px;
+    width: 100%;
+    text-align: center;
+}
+.poem-line {
+    display: block;
+    opacity: 0;
+    transform: translateY(30px);
+    margin-bottom: 30px;
+    text-shadow: 0 0 40px rgba(0,0,0,1), 0 0 80px rgba(0,0,0,0.9);
+}
+.poem-line.line-cursive {
+    font-family: 'Lavishly Yours', cursive;
+    font-size: 7rem;
+    background: linear-gradient(135deg, #d4af37, #f5d780, #d4af37);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: goldShimmer 4s ease infinite;
+    line-height: 1.2;
+    margin-bottom: 50px;
+}
+.poem-line.line-body {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 2.2rem;
+    color: #fff;
+    line-height: 1.6;
+    letter-spacing: 2px;
+}
+@keyframes goldShimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+.scroll-instruction {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 2s ease;
+}
+.scroll-instruction.show { opacity: 1; }
+.scroll-instruction.hide { opacity: 0; }
+.scroll-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: #d4af37;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    animation: pulseText 2s ease infinite;
+}
+@keyframes pulseText {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+.scroll-arrow-down {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.scroll-arrow-down span {
+    width: 15px;
+    height: 15px;
+    border-right: 2px solid #d4af37;
+    border-bottom: 2px solid #d4af37;
+    transform: rotate(45deg);
+    animation: arrowBounce 2s infinite;
+    opacity: 0;
+}
+.scroll-arrow-down span:nth-child(1) { animation-delay: 0s; }
+.scroll-arrow-down span:nth-child(2) { animation-delay: 0.2s; }
+.scroll-arrow-down span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes arrowBounce {
+    0% { opacity: 0; transform: rotate(45deg) translate(-8px, -8px); }
+    50% { opacity: 1; }
+    100% { opacity: 0; transform: rotate(45deg) translate(8px, 8px); }
+}
+.chapters-container {
+    position: relative;
+    z-index: 20;
+    margin-top: 100vh;
+}
+.chapter {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    position: relative;
+}
+.chapter-card {
+    max-width: 700px;
+    width: 100%;
+    padding: 60px 50px;
+    border-radius: 24px;
+    position: relative;
+
+    opacity: 0.15;
+    filter: blur(8px);
+    transform: scale(0.9);
+    transition:
+        opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        filter 1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.chapter-card.focused {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+}
+.chapter-card.preview {
+    opacity: 0.35;
+    filter: blur(6px);
+    transform: scale(0.92);
+}
+.chapter-card.passed {
+    opacity: 0.08;
+    filter: blur(10px);
+    transform: scale(0.85);
+}
+.chapter-floating {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.chapter-solid {
+    background: linear-gradient(135deg,
+        rgba(20, 15, 40, 0.95) 0%,
+        rgba(10, 5, 25, 0.98) 100%);
+    border: 2px solid rgba(212, 175, 55, 0.5);
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.7),
+        0 0 100px rgba(212, 175, 55, 0.15);
+}
+.chapter-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+    line-height: 1.3;
+    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+}
+.chapter-cursive {
+    font-family: 'Lavishly Yours', cursive;
+    font-size: 3.5rem;
+    background: linear-gradient(135deg, #d4af37, #f5d780, #d4af37);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: goldShimmer 4s ease infinite;
+    line-height: 1.3;
+    margin-bottom: 35px;
+}
+.chapter-content {
+    text-align: left;
+}
+.chapter-content p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 2;
+    margin-bottom: 18px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+.chapter-highlight {
+    font-family: 'Cinzel Decorative', serif !important;
+    font-size: 1.3rem !important;
+    color: #d4af37 !important;
+    font-style: italic;
+    margin-top: 25px !important;
+    padding: 20px;
+    border-left: 3px solid #d4af37;
+    padding-left: 20px;
+    text-align: center;
+    letter-spacing: 1px;
+}
+.chapter-highlight-large {
+    font-family: 'Lavishly Yours', cursive !important;
+    font-size: 4.5rem !important;
+    background: linear-gradient(135deg, #d4af37, #f5d780, #d4af37) !important;
+    background-size: 200% 200% !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: goldShimmer 4s ease infinite;
+    text-align: center;
+    margin: 30px 0 !important;
+    line-height: 1.3 !important;
+}
+.gold-word {
+    color: #d4af37;
+    font-weight: 700;
+    font-family: 'Cinzel Decorative', serif;
+}
+.memory-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+.memory-item:last-child { 
+    border-bottom: none; 
+}
+.memory-icon {
+    color: #d4af37;
+    font-size: 1.5rem;
+    line-height: 1;
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+.memory-item p { 
+    margin-bottom: 0 !important; 
+    font-style: italic; 
+}
+.chapter-letter .chapter-cursive {
+    font-size: 2.5rem;
+    text-align: left;
+    margin-bottom: 20px;
+}
+.letter-content p { 
+    font-style: italic; 
+    line-height: 2.2; 
+}
+.letter-signature {
+    font-family: 'Lavishly Yours', cursive !important;
+    font-size: 2.5rem !important;
+    color: #d4af37 !important;
+    text-align: right !important;
+    margin-top: 30px !important;
+    font-style: normal !important;
+}
+.promises-list { 
+    text-align: left; 
+}
+.promise-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+.promise-item:last-child { 
+    border-bottom: none; 
+}
+.promise-num {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #d4af37;
+    min-width: 40px;
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+.promise-item p { 
+    margin-bottom: 0 !important; 
+    font-size: 1.15rem !important; 
+}
+.strength-symbol {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 2rem;
+    letter-spacing: 20px;
+    color: #d4af37;
+}
+.symbol-heart {
+    animation: heartBeat 2s ease infinite;
+    display: inline-block;
+}
+@keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+.chapter-birthday { 
+    text-align: center; 
+}
+.chapter-birthday .chapter-content { 
+    text-align: center; 
+}
+.birthday-icon {
+    margin: 30px auto;
+    display: flex;
+    justify-content: center;
+}
+.cake-visual {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    background: radial-gradient(circle, #d4af37, #b8860b);
+    border-radius: 15px 15px 20px 20px;
+    box-shadow:
+        0 0 40px rgba(212, 175, 55, 0.5),
+        inset 0 -20px 30px rgba(0, 0, 0, 0.3);
+}
+.cake-visual::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 25px;
+    background: linear-gradient(180deg, #f5d780, #d4af37);
+    border-radius: 2px;
+}
+.candle-flame {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 15px;
+    background: radial-gradient(ellipse at center bottom, #fff, #ffdd44, #ff8800);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    animation: flicker 0.5s ease infinite alternate;
+    box-shadow:
+        0 0 15px rgba(255, 200, 50, 0.8),
+        0 0 30px rgba(255, 150, 50, 0.5);
+}
+@keyframes flicker {
+    0% { transform: translateX(-50%) scale(1) rotate(-3deg); }
+    100% { transform: translateX(-50%) scale(1.1) rotate(3deg); }
+}
+.birthday-wish {
+    font-family: 'Cinzel Decorative', serif !important;
+    font-size: 1.8rem !important;
+    color: #d4af37 !important;
+    text-align: center;
+    margin-top: 30px !important;
+    letter-spacing: 2px;
+    text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+}
+.chapter-final { 
+    text-align: center; 
+}
+.chapter-final .chapter-content { 
+    text-align: center; 
+}
+.final-signature {
+    margin-top: 50px;
+    text-align: right;
+}
+.signature-text {
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 1.1rem !important;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 10px !important;
+}
+.signature-name {
+    font-family: 'Lavishly Yours', cursive !important;
+    font-size: 3rem !important;
+    background: linear-gradient(135deg, #d4af37, #f5d780, #d4af37) !important;
+    background-size: 200% 200% !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: goldShimmer 4s ease infinite;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+}
+
+@media (max-width: 768px) {
+    .poem-line.line-cursive { 
+        font-size: 4rem; 
+    }
+
+    .poem-line.line-body { 
+        font-size: 1.3rem; 
+        letter-spacing: 1px; 
+    }
+
+    .chapter-card { 
+        padding: 40px 25px; 
+    }
+
+    .chapter-title { 
+        font-size: 1.8rem; 
+        letter-spacing: 2px; 
+    }
+
+    .chapter-cursive { 
+        font-size: 2.5rem; 
+    }
+
+    .chapter-content p { 
+        font-size: 1.05rem; 
+        line-height: 1.8; 
+    }
+
+    .chapter-highlight { 
+        font-size: 1.1rem !important; 
+    }
+
+    .chapter-highlight-large { 
+        font-size: 3rem !important; 
+    }
+
+    .promise-num { 
+        font-size: 1.4rem; 
+        min-width: 30px; 
+    }
+
+    .promise-item p { 
+        font-size: 1rem !important; 
+    }
+
+    .signature-name { 
+        font-size: 2.2rem !important; 
+    }
+
+    .birthday-wish { 
+        font-size: 1.3rem !important; 
+    }
+}
+
+@media (max-width: 480px) {
+    .poem-line.line-cursive { 
+        font-size: 3rem; 
+    }
+
+    .poem-line.line-body { 
+        font-size: 1.05rem; 
+    }
+
+    .chapter-card {
+        padding: 30px 20px;
+    }
+
+    .chapter-title { 
+        font-size: 1.5rem; 
+    }
+
+    .chapter-cursive { 
+        font-size: 2rem; 
+    }
+
+    .chapter-content p {
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .chapter-highlight { 
+        font-size: 0.95rem !important;
+        padding: 15px;
+    }
+
+    .chapter-highlight-large { 
+        font-size: 2.5rem !important; 
+    }
+
+    .promise-item {
+        gap: 12px;
+        padding: 15px 0;
+    }
+
+    .promise-num {
+        font-size: 1.2rem;
+        min-width: 25px;
+    }
+
+    .birthday-wish {
+        font-size: 1.1rem !important;
+    }
+
+    .signature-name {
+        font-size: 1.8rem !important;
+    }
+
+    .strength-symbol {
+        font-size: 1.5rem;
+        letter-spacing: 10px;
+    }
+}
